@@ -62,7 +62,9 @@ func sendRequest(url string, reqs int) (int, int, error) {
 
 	var t1, t3, t4 time.Time
 	for i := 0; i < reqs; i++ {
+		start := time.Now()
 		req, err := http.NewRequest("GET", url, nil)
+		end := time.Now()
 
 		trace := &httptrace.ClientTrace{
 			DNSDone: func(_ httptrace.DNSDoneInfo) { t1 = time.Now() },
@@ -82,9 +84,8 @@ func sendRequest(url string, reqs int) (int, int, error) {
 			failure++
 		}
 		avg_processing = append(avg_processing, calc(t4.Sub(t3)))
-		fmt.Println(avg_processing)
-		fmt.Println(len(avg_processing))
 
+		fmt.Println("time for the request: ", end.Sub(start))
 		success++
 	}
 
@@ -95,8 +96,9 @@ func sendRequest(url string, reqs int) (int, int, error) {
 	avg := final / len(avg_processing)
 	fmt.Println("final average server processing time: ", color.CyanString(strconv.Itoa(avg))+color.CyanString("ms"))
 
-	fmt.Printf("success: %d\n", success)
-	fmt.Printf("failed: %d\n", failure)
+	fmt.Println("Results:")
+	fmt.Printf(color.GreenString("Success ..................................: %d\n"), success)
+	fmt.Printf(color.RedString("Failed  ..................................: %d\n"), failure)
 
 	return success, failure, nil
 }
