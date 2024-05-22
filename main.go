@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"context"
 	"flag"
 	"fmt"
@@ -17,30 +18,68 @@ import (
 
 func main() {
 	url := flag.String("u", "", "url to load test")
+	file := flag.String("f", "", "list of urls")
 	reqs := flag.Int("n", 0, "number of requests")
 
 	flag.Parse()
 
-	if *url == "" || reqs == nil {
-		flag.Usage()
-		os.Exit(1)
+	// if reqs == nil {
+	// 	flag.Usage()
+	// 	os.Exit(1)
+	// }
+
+	f := flag.Lookup("f")
+
+	if f.Value.String() != "" {
+		file_content, err := os.Open(*file)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		scanner := bufio.NewScanner(file_content)
+
+		for scanner.Scan() {
+			line := scanner.Text()
+			fmt.Println(line)
+			var wg sync.WaitGroup
+			wg.Add(1)
+
+			go func() {
+				code, err := requestStatus(line)
+
+				if err != nil {
+					log.Fatal(err)
+				}
+				fmt.Printf("status code: %d\n", code)
+				sendRequest(line, *reqs)
+
+				wg.Done()
+			}()
+
+			wg.Wait()
+		}
+
+		if scanner.Err() != nil {
+			log.Println(scanner.Err())
+		}
+	} else {
+		code, err := requestStatus(*url)
+
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		fmt.Printf("status code: %d\n", code)
+		var wg sync.WaitGroup
+		wg.Add(1)
+
+		go func() {
+			sendRequest(*url, *reqs)
+			wg.Done()
+		}()
+
+		wg.Wait()
 	}
-
-	code, err := requestStatus(*url)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	fmt.Printf("status code: %d\n", code)
-	var wg sync.WaitGroup
-	wg.Add(1)
-
-	go func() {
-		sendRequest(*url, *reqs)
-		wg.Done()
-	}()
-
-	wg.Wait()
 
 }
 
