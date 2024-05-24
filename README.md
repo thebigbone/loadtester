@@ -1,4 +1,5 @@
 ### HTTP load tester
+![http](https://github.com/thebigbone/loadtester/assets/95130644/4bfcc6c5-f9ab-4a59-a3aa-46a10ad27c7a)
 
 - stress test API endpoints or websites
 - get the precise response time for each request
