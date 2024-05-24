@@ -23,10 +23,23 @@ func main() {
 
 	flag.Parse()
 
-	// if reqs == nil {
-	// 	flag.Usage()
-	// 	os.Exit(1)
-	// }
+	if *reqs == 0 {
+		fmt.Println(color.RedString("number of requests is not passed"))
+		flag.Usage()
+		return
+	}
+
+	if *url == "" && *file == "" {
+		fmt.Println(color.RedString("either url or file should be passed"))
+		flag.Usage()
+		return
+	}
+
+	if *url != "" && *file != "" {
+		fmt.Println(color.RedString("either url or file should be passed, not both"))
+		flag.Usage()
+		return
+	}
 
 	f := flag.Lookup("f")
 
